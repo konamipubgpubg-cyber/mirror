@@ -1376,3 +1376,43 @@ class InputOverlay(context: Context, attrs: AttributeSet?) :
         }
     }
 }
+var lastX = 0f
+var lastY = 0f
+var sensitivity = 0.04f // خێرایی سوڕانی کامێرا (دەتوانیت زیادی بکەیت یان کەم)
+
+fun handleCameraSwipe(event: MotionEvent): Boolean {
+    when (event.actionMasked) {
+        MotionEvent.ACTION_DOWN -> {
+            lastX = event.x
+            lastY = event.y
+        }
+        MotionEvent.ACTION_MOVE -> {
+            val deltaX = event.x - lastX
+            val deltaY = event.y - lastY
+
+            // هەژمارکردنی بەهای ئینپوت بۆ R-Stick لە نێوان -1.0 و 1.0
+            val stickX = (deltaX * sensitivity).coerceIn(-1.0f, 1.0f)
+            val stickY = (deltaY * sensitivity).coerceIn(-1.0f, 1.0f)
+
+            // ناردنی ئینپوت بۆ ناو ئیمۆڵیتەر
+            NativeLibrary.onEmulationTargetLayoutAxis(
+                NativeLibrary.ButtonType.STICK_RIGHT,
+                stickX,
+                stickY
+            )
+
+            // تازەکردنەوەی پۆزیشن بۆ پێوانی داهاتوو
+            lastX = event.x
+            lastY = event.y
+        }
+        MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+            // وەستاندنی کامێرا کاتێک پەنجە لەسەر شاشەکە نامێنێت
+            NativeLibrary.onEmulationTargetLayoutAxis(
+                NativeLibrary.ButtonType.STICK_RIGHT,
+                0f,
+                0f
+            )
+        }
+    }
+    return true
+}
