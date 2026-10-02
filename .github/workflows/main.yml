@@ -20,11 +20,11 @@ jobs:
         distribution: 'temurin'
 
     - name: Build with Gradle
-      working-directory: mirror/src/android
+      working-directory: src/android
       run: ./gradlew assembleDebug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: app-debug
-        path: mirror/src/android/app/build/outputs/apk/debug/app-debug.apk
+        path: src/android/app/build/outputs/apk/debug/app-debug.apk
